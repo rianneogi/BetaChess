@@ -6,35 +6,14 @@
 #include "TranspositionTable.h"
 #include "Clock.h"
 
+extern int PieceMaterial[7];
+
 enum EvalConstants{CONS_INF = 20000,CONS_NEGINF = -20000, CONS_DRAW = 0, CONS_MATED = -10000};
 
 extern int EndgameMaterial;
-
-class EvalStruct
-{
-public:
-	EvalStruct();
-	EvalStruct(string personality); //loads evaluation data from personality file
-	~EvalStruct();
-
-	int MaterialValues[13]; //material values
-
-	int PieceSq[13][64];    //piece square values for mid and endgame
-	int PieceSqEG[13][64];
-
-	int BishopPairBonus;
-	int KnightPairBonus;
-	int RookPairBonus;
-	int NoPawnsPenalty;
-
-	int DoubledPawnPenalty[8];  //pawn structure
-	int IsolatedPawnPenalty[8];
-	int PassedPawnBonus[64];
-	int BlockedPawnPenaly[64];
-
-	int RookHalfOpenBonus[8];
-	int RookOpenBonus[8];
-};
+extern int MAXTIME;
+extern int MAXDEPTH;
+extern int CheckupNodeCount;
 
 class Engine
 {
@@ -65,20 +44,23 @@ class Engine
 	int AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* variation,bool cannull,bool dopv);
 	void movesort(vector<Move>& moves,int depth);
 	Move getHighestScoringMove(vector<Move>& moves,int currentmove);
-	int getMoveScore(const Move& m);
+	unsigned long long getMoveScore(const Move& m);
 	void ageHistoryTable();
 	void checkup();
 	void setKiller(Move m,int depth);
+	bool isRepetition();
 
 	//Quiescence.cpp
 	int QuiescenceSearch(int alpha,int beta,Move lastmove);
 	int QuiescenceSearchStandPat(int alpha,int beta,Move lastmove);
+	int StaticExchangeEvaluation(int to, int from,int movpiece,int capt);
 	int StaticExchangeEvaluation2(Move m);
 	int StaticExchangeEvaluation(Move m);
 	int StaticExchangeEvaluation(int square,int side);
 
 	//Evaluation.cpp
 	int LeafEval(int alpha,int beta);
+	int EvalKingSafety(int turn,bool isEG);
 	int FastEval();
 	int getBoardMaterial();
 	int Trace(int alpha,int beta);

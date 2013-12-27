@@ -82,7 +82,7 @@ void Interface::UCI()
 						)
 						{
 							e1.makeMove(v.at(j));
-							cout << v.at(j).toString() << endl;
+							//cout << v.at(j).toString() << endl;
 						}
 					}
 					//cout << s << endl;
@@ -229,6 +229,12 @@ void Interface::start()
 			cin >> d;
 			cout << e1.pos.getSmallestAttacker(e1.pos.turn,d).toString() << endl;
 		}
+		else if(s=="depth")
+		{
+			int d = 0;
+			cin >> d;
+			MAXDEPTH = d;
+		}
         else if(s=="info" || s=="information")
         {
             info();
@@ -266,6 +272,10 @@ void Interface::info()
 	{
 		printBitset(board.pos.OccupiedSq);
 	}
+	if(s=="eos")
+	{
+		printBitset(e1.pos.OccupiedSq);
+	}
 	if(s=="os90")
 	{
 		printBitset(board.pos.OccupiedSq90);
@@ -281,6 +291,10 @@ void Interface::info()
 	if(s=="wp")
 	{
 		printBitset(board.pos.Pieces[COLOR_WHITE][PIECE_PAWN]);
+	}
+	if(s=="ewp")
+	{
+		printBitset(e1.pos.Pieces[COLOR_WHITE][PIECE_PAWN]);
 	}
 	if(s=="bp")
 	{

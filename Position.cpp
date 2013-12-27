@@ -72,6 +72,8 @@ Position::Position()
 			TTKey ^= TT_CastlingKey[i][j];
 		}
 	}
+
+	movelist = vector<Move>(0);
 }
 
 Position::Position(Position const& pos,Move const& m)
@@ -121,6 +123,7 @@ void Position::forceMove(Move const& m)
 	if(m==CONS_NULLMOVE) //nullmove
 	{
 		turn = getOpponent(turn);
+		epsquare = 0;
 		TTKey ^= TT_ColorKey;
 		return;
 	}
@@ -230,19 +233,24 @@ void Position::forceMove(Move const& m)
         Pieces[turn][PIECE_ROOK] ^= cas;
         Squares[t] = Squares[f];
         Squares[f] = SQUARE_EMPTY;
+
+		TTKey ^= TT_PieceKey[turn][PIECE_ROOK][f];
+		TTKey ^= TT_PieceKey[turn][PIECE_ROOK][t];
     }
 	else if(special==PIECE_PAWN) //en passant
     {
         int x = 0;
         if(turn==COLOR_WHITE)
         {
-            x = to-8;
+            x = getMinus8(to);
 			Pieces[COLOR_BLACK][PIECE_PAWN] ^= getPos2Bit(x);
+			TTKey ^= TT_PieceKey[COLOR_BLACK][PIECE_PAWN][x];
         }
         else
         {
-            x = to+8;
+            x = getPlus8(to);
 			Pieces[COLOR_WHITE][PIECE_PAWN] ^= getPos2Bit(x);
+			TTKey ^= TT_PieceKey[COLOR_WHITE][PIECE_PAWN][x];
         }
         OccupiedSq ^= getPos2Bit(x);
         OccupiedSq45 ^= getPos2Bit(getturn45(x));
@@ -322,13 +330,13 @@ void Position::forceMove(Move const& m)
 				epsquare = ((to)+8);
 			}
 		}*/
-		if(turn==COLOR_WHITE && getRank(from)==1 && getRank(to)==3)
+		if(turn==COLOR_WHITE && getRank(int(from))==1 && getRank(int(to))==3)
 		{
-			epsquare = from+8;
+			epsquare = getPlus8(from);
 		}
-		else if(turn==COLOR_BLACK && getRank(from)==6 && getRank(to)==4)
+		else if(turn==COLOR_BLACK && getRank(int(from))==6 && getRank(int(to))==4)
 		{
-			epsquare = to+8;
+			epsquare = getPlus8(to);
 		}
 		else
 		{
@@ -344,10 +352,15 @@ void Position::forceMove(Move const& m)
 	TTKey ^= TT_ColorKey;	
 }
 
-void Position::makeMove(int n) //deprecated
+bool Position::makeMove(Move const& m) //deprecated
 {
-    //Position::forceMove(moves.at(n));
-	generateMoves();
+    forceMove(m);
+	if(!underCheck(getOpponent(turn)))
+	{
+		return true;
+	}
+	unmakeMove(m);
+	return false;
 }
 
 void Position::unmakeMove(Move const& m)
@@ -358,6 +371,7 @@ void Position::unmakeMove(Move const& m)
 	if(m==CONS_NULLMOVE) //nullmove
 	{
 		turn = getOpponent(turn);
+		epsquare = m.getEP();
 		TTKey ^= TT_ColorKey;
 		return;
 	}
@@ -491,21 +505,26 @@ void Position::unmakeMove(Move const& m)
         Pieces[turn][PIECE_ROOK] ^= cas;
         Squares[f] = Squares[t];
         Squares[t] = SQUARE_EMPTY;
+
+		TTKey ^= TT_PieceKey[turn][PIECE_ROOK][f];
+		TTKey ^= TT_PieceKey[turn][PIECE_ROOK][t];
     }
 	else if(special==PIECE_PAWN) //en passant
     {
         int x = 0;
         if(turn==COLOR_WHITE)
         {
-            x = to-8;
+            x = getMinus8(to);
 			Pieces[COLOR_BLACK][PIECE_PAWN] ^= getPos2Bit(x);
 			Squares[x] = SQUARE_BLACKPAWN;
+			TTKey ^= TT_PieceKey[COLOR_BLACK][PIECE_PAWN][x];
         }
         else
         {
-            x = to+8;
+            x = getPlus8(to);
 			Pieces[COLOR_WHITE][PIECE_PAWN] ^= getPos2Bit(x);
 			Squares[x] = SQUARE_WHITEPAWN;
+			TTKey ^= TT_PieceKey[COLOR_WHITE][PIECE_PAWN][x];
         }
         OccupiedSq ^= getPos2Bit(x);
         OccupiedSq45 ^= getPos2Bit(getturn45(x));
@@ -668,16 +687,16 @@ std::vector<Move> Position::generateMoves()
 			else
 				x = getPawnAttacks(turn,n)&(ColorPieces[COLOR_WHITE] | getPos2Bit(epsquare));
 		}*/
-		/*if(epsquare==0)*/
+		if(epsquare==0)
 			x = getPawnAttacks(turn,n)&(ColorPieces[getOpponent(turn)]);
-		/*else
-			x = getPawnAttacks(turn,n)&(ColorPieces[getOpponent(turn)] | getPos2Bit(epsquare));*/
+		else
+			x = getPawnAttacks(turn,n)&(ColorPieces[getOpponent(turn)] | getPos2Bit(epsquare));
         while(x)
         {
             unsigned long k = 0;
 			_BitScanForward64(&k,x);
             x^=getPos2Bit(k);
-			if(getRank(k)==7 || getRank(k)==0) //promotion
+			if(getRank(int(k))==7 || getRank(int(k))==0) //promotion
 			{
 				Move movq(n,k,PIECE_PAWN,Squares[k],PIECE_QUEEN,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);
 				addMove(moves,movq);
@@ -691,19 +710,19 @@ std::vector<Move> Position::generateMoves()
 			else
 			{
 				Move mov(n,k,PIECE_PAWN,Squares[k],PIECE_NONE,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);
-				/*if(k==epsquare && epsquare!=0)
-					mov = Move(n,k,PIECE_PAWN,Squares[k],PIECE_PAWN,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);*/
+				if(k==epsquare && epsquare!=0)
+					mov = Move(n,k,PIECE_PAWN,Squares[k],PIECE_PAWN,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);
 				addMove(moves,mov);
 			}
         }
-		if(epsquare!=0)
+		/*if(epsquare!=0)
 		{ 
 			if((getPawnAttacks(turn,n)&getPos2Bit(epsquare)))
 			{
 				Move mov(n,epsquare,PIECE_PAWN,SQUARE_EMPTY,PIECE_PAWN,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);
 				addMove(moves,mov);
 			}
-		}
+		}*/
     }
     //Knight Moves
     b = Pieces[turn][PIECE_KNIGHT];
@@ -747,8 +766,9 @@ std::vector<Move> Position::generateMoves()
         unsigned long n = 0;
 		_BitScanForward64(&n,b);
         b^=getPos2Bit(n);
-        Bitset m = getRookRankMoves(n,(OccupiedSq>>(getRankOffset(n)))&0xff);
-        m |= getRookFileMoves(n,(OccupiedSq90>>(getFileOffset(n)))&0xff);
+        /*Bitset m = getRookRankMoves(n,(OccupiedSq>>(getRankOffset(n)))&0xff);
+        m |= getRookFileMoves(n,(OccupiedSq90>>(getFileOffset(n)))&0xff);*/
+		Bitset m = getRookAttacks(n,OccupiedSq,OccupiedSq90);
         m &= m^ColorPieces[turn];
         while(m)
         {
@@ -846,7 +866,7 @@ std::vector<Move> Position::generateMoves()
 		}
 	}*/
 
-	sortMoves(moves,turn);
+	//sortMoves(moves,turn);
 	return moves;
 }
 
@@ -897,7 +917,7 @@ std::vector<Move> Position::generateCaptures()
 			else
 			{
 				Move mov(n,k,PIECE_PAWN,Squares[k],PIECE_NONE,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);
-				if(k==epsquare && epsquare!=0)
+				if(epsquare!=0 && k==epsquare)
 					mov = Move(n,k,PIECE_PAWN,Squares[k],PIECE_PAWN,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);
 				addMove(moves,mov);
 			}
@@ -945,8 +965,9 @@ std::vector<Move> Position::generateCaptures()
         unsigned long n = 0;
 		_BitScanForward64(&n,b);
         b^=getPos2Bit(n);
-        Bitset m = getRookRankMoves(n,(OccupiedSq>>(getRankOffset(n)))&0xff);
-        m |= getRookFileMoves(n,(OccupiedSq90>>(getFileOffset(n)))&0xff);
+        /*Bitset m = getRookRankMoves(n,(OccupiedSq>>(getRankOffset(n)))&0xff);
+        m |= getRookFileMoves(n,(OccupiedSq90>>(getFileOffset(n)))&0xff);*/
+		Bitset m = getRookAttacks(n,OccupiedSq,OccupiedSq90);
         m &= ColorPieces[getOpponent(turn)];
         while(m)
         {
@@ -1015,18 +1036,18 @@ std::vector<Move> Position::generateCaptures()
 		}
 	}*/
 
-	sortMoves(moves,turn);
+	//sortMoves(moves,turn);
 	return moves;
 }
 
 void Position::addMove(std::vector<Move>& vec,Move const& m)
 {
-	forceMove(m);
+	/*forceMove(m);
 	if(!underCheck(getOpponent(turn)))
-	{
+	{*/
 		vec.push_back(m);
-	}
-	unmakeMove(m);
+	/*}
+	unmakeMove(m);*/
 }
 
 bool Position::isLegal(Move const& m)
@@ -1053,8 +1074,8 @@ bool Position::isAttacked(int turn,int n)
     b |= getKingMoves(n)&Pieces[opp][PIECE_KING];
 	/*if(b!=0)
         return true;*/
-    b |= getRookRankMoves(n,(OccupiedSq>>(8*getRank(n)))&0xff)&(Pieces[opp][PIECE_ROOK]|Pieces[opp][PIECE_QUEEN]);
-    b |= getRookFileMoves(n,(OccupiedSq90>>(8*getFile(n)))&0xff)&(Pieces[opp][PIECE_ROOK]|Pieces[opp][PIECE_QUEEN]);
+    b |= getRookRankMoves(n,(OccupiedSq>>(getRankOffset(n)))&0xff)&(Pieces[opp][PIECE_ROOK]|Pieces[opp][PIECE_QUEEN]);
+    b |= getRookFileMoves(n,(OccupiedSq90>>(getFileOffset(n)))&0xff)&(Pieces[opp][PIECE_ROOK]|Pieces[opp][PIECE_QUEEN]);
 	/*if(b!=0)
         return true;*/
     b |= getBishopA1H8Moves(n,(OccupiedSq135>>getDiag(getturn135(n)))&0xff)&(Pieces[opp][PIECE_BISHOP]|Pieces[opp][PIECE_QUEEN]);
@@ -1083,16 +1104,16 @@ int Position::getSmallestAttacker2(int turn,int n)
 	{
 		return PIECE_BISHOP;
 	}
-    b |= getRookRankMoves(n,(OccupiedSq>>(8*getRank(n)))&0xff)&Pieces[turn][PIECE_ROOK];
-    b |= getRookFileMoves(n,(OccupiedSq90>>(8*getFile(n)))&0xff)&Pieces[turn][PIECE_ROOK];
+    b |= getRookRankMoves(n,(OccupiedSq>>(getRankOffset(n)))&0xff)&Pieces[turn][PIECE_ROOK];
+    b |= getRookFileMoves(n,(OccupiedSq90>>(getFileOffset(n)))&0xff)&Pieces[turn][PIECE_ROOK];
 	if(b!=0)
 	{
 		return PIECE_ROOK;
 	}
 	b |= getBishopA1H8Moves(n,(OccupiedSq135>>getDiag(getturn135(n)))&0xff)&Pieces[turn][PIECE_QUEEN];
     b |= getBishopA8H1Moves(n,(OccupiedSq45>>getDiag(getturn45(n)))&0xff)&Pieces[turn][PIECE_QUEEN];
-	b |= getRookRankMoves(n,(OccupiedSq>>(8*getRank(n)))&0xff)&Pieces[turn][PIECE_QUEEN];
-    b |= getRookFileMoves(n,(OccupiedSq90>>(8*getFile(n)))&0xff)&Pieces[turn][PIECE_QUEEN];
+	b |= getRookRankMoves(n,(OccupiedSq>>(getRankOffset(n)))&0xff)&Pieces[turn][PIECE_QUEEN];
+    b |= getRookFileMoves(n,(OccupiedSq90>>(getFileOffset(n)))&0xff)&Pieces[turn][PIECE_QUEEN];
 	if(b!=0)
 	{
 		return PIECE_QUEEN;
@@ -1107,56 +1128,61 @@ int Position::getSmallestAttacker2(int turn,int n)
 
 Move Position::getSmallestAttacker(int turn,int n)
 {
+	return getSmallestAttacker(turn,n,OccupiedSq,OccupiedSq90,OccupiedSq45,OccupiedSq135);
+}
+
+Move Position::getSmallestAttacker(int turn,int n,unsigned long long occ,unsigned long long occ90,unsigned long long occ45,
+								   unsigned long long occ135)
+{
     int opp = getOpponent(turn);
 	Bitset b = 0x0;
-	//Bitset b = getPawnAttacks(opp,n)&Pieces[turn][PIECE_PAWN];
-	//if(b!=0)
-	//{
-	//	unsigned long k = 0;
-	//	_BitScanForward64(&k,b);  //we don't care if this is a promotion or en passant since this function is only going to be called in SEE
-	//	Move mov(k,n,PIECE_PAWN,Squares[n],PIECE_NONE,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);
-	//	if(isLegal(mov))
-	//		return mov;
-	//}
+	b = getPawnAttacks(opp,n)&Pieces[turn][PIECE_PAWN];
+	if(b!=0)
+	{
+		unsigned long k = 0;
+		_BitScanForward64(&k,b);  //we don't care if this is a promotion or en passant since this function is only going to be called in SEE
+		Move mov(k,n,PIECE_PAWN,Squares[n],PIECE_NONE,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);
+		//if(isLegal(mov))
+			return mov;
+	}
 	b |= getKnightMoves(n)&Pieces[turn][PIECE_KNIGHT];
 	if(b!=0)
 	{
 		unsigned long k = 0;
 		_BitScanForward64(&k,b);
 		Move mov(k,n,PIECE_KNIGHT,Squares[n],PIECE_NONE,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);
-		if(isLegal(mov))
+		//if(isLegal(mov))
 			return mov;
 	}
-	b |= getBishopA1H8Moves(n,(OccupiedSq135>>getDiag(getturn135(n)))&0xff)&Pieces[turn][PIECE_BISHOP];
-    b |= getBishopA8H1Moves(n,(OccupiedSq45>>getDiag(getturn45(n)))&0xff)&Pieces[turn][PIECE_BISHOP];
+	b |= getBishopAttacks(n,occ45,occ135);
+	b &= Pieces[turn][PIECE_BISHOP];
 	if(b!=0)
 	{
 		unsigned long k = 0;
 		_BitScanForward64(&k,b);
 		Move mov(k,n,PIECE_BISHOP,Squares[n],PIECE_NONE,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);
-		if(isLegal(mov))
+		//if(isLegal(mov))
 			return mov;
 	}
-    b |= getRookRankMoves(n,(OccupiedSq>>(8*getRank(n)))&0xff)&Pieces[turn][PIECE_ROOK];
-    b |= getRookFileMoves(n,(OccupiedSq90>>(8*getFile(n)))&0xff)&Pieces[turn][PIECE_ROOK];
+    b |= getRookAttacks(n,occ,occ90);
+	b &= Pieces[turn][PIECE_ROOK];
 	if(b!=0)
 	{
 		unsigned long k = 0;
 		_BitScanForward64(&k,b);
 		Move mov(k,n,PIECE_ROOK,Squares[n],PIECE_NONE,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);
-		if(isLegal(mov))
+		//if(isLegal(mov))
 			return mov;
 	}
-	b |= getBishopA1H8Moves(n,(OccupiedSq135>>getDiag(getturn135(n)))&0xff)&Pieces[turn][PIECE_QUEEN];
-    b |= getBishopA8H1Moves(n,(OccupiedSq45>>getDiag(getturn45(n)))&0xff)&Pieces[turn][PIECE_QUEEN];
-	b |= getRookRankMoves(n,(OccupiedSq>>(8*getRank(n)))&0xff)&Pieces[turn][PIECE_QUEEN];
-    b |= getRookFileMoves(n,(OccupiedSq90>>(8*getFile(n)))&0xff)&Pieces[turn][PIECE_QUEEN];
+	b |= getBishopAttacks(n,occ45,occ135);
+	b |= getRookAttacks(n,occ,occ90);
+	b &= Pieces[turn][PIECE_QUEEN];
 	if(b!=0)
 	{
 		unsigned long k = 0;
 		_BitScanForward64(&k,b);
 		Move mov(k,n,PIECE_QUEEN,Squares[n],PIECE_NONE,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);
-		if(isLegal(mov))
+		//if(isLegal(mov))
 			return mov;
 	}
 	b |= getKingMoves(n)&Pieces[turn][PIECE_KING];
@@ -1165,7 +1191,7 @@ Move Position::getSmallestAttacker(int turn,int n)
         unsigned long k = 0;
 		_BitScanForward64(&k,b);
 		Move mov(k,n,PIECE_KING,Squares[n],PIECE_NONE,castling[0][0],castling[0][1],castling[1][0],castling[1][1],epsquare);
-		if(isLegal(mov))
+		//if(isLegal(mov))
 			return mov;
 	}
     return CONS_NULLMOVE;
@@ -1241,6 +1267,20 @@ int Position::getGameStatus()
 		}
 	}
 	return STATUS_NOTOVER;
+}
+
+unsigned long long getRookAttacks(int sq,unsigned long long occ,unsigned long long occ90)
+{
+	Bitset m = getRookRankMoves(sq,(occ>>(getRankOffset(sq)))&0xff);
+    m |= getRookFileMoves(sq,(occ90>>(getFileOffset(sq)))&0xff);
+    return m;
+}
+
+unsigned long long getBishopAttacks(int sq,unsigned long long occ45,unsigned long long occ135)
+{
+	Bitset m = getBishopA1H8Moves(sq,(occ135>>getDiag(getturn135(sq)))&0xff);
+    m |= getBishopA8H1Moves(sq,(occ45>>getDiag(getturn45(sq)))&0xff);
+    return m;
 }
 
 int Position::getColorPieces(int turn)

@@ -34,12 +34,14 @@ public:
 	bool isLegal(Move const& m);
     void addMove(std::vector<Move>& vec,Move const& m);
     void forceMove(Move const& m);
-    void makeMove(int n); //deprecated
+    bool makeMove(Move const& m);
     void unmakeMove(Move const& m);
     Move* getBestMove();
     bool checkLegal(Move* m);
     bool isAttacked(int turn,int n);
 	Move getSmallestAttacker(int turn,int n);
+	Move getSmallestAttacker(int turn,int n,unsigned long long occ,unsigned long long occ90,unsigned long long occ45,
+								   unsigned long long occ135);
 	int getSmallestAttacker2(int turn,int n);
 	Move makeCapture(int piece,int n); //makes the first legal move by piece to square n, returns the move made
     bool underCheck(int turn);
@@ -48,6 +50,8 @@ public:
 	void display(int flip);
 	void takebackMove();
 };
+unsigned long long getRookAttacks(int sq,unsigned long long occ,unsigned long long occ90);
+unsigned long long getBishopAttacks(int sq,unsigned long long occ45,unsigned long long occ135);
 
 //int getSquare2Piece(int sq);
 //int getSquare2Color(int sq);

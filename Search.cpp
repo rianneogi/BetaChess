@@ -4,13 +4,14 @@
 
 jmp_buf env;
 
-int FutilityMargin[3] = {0,200,500};
+int FutilityMargin[3] = {0,300,600};
 
 unsigned int HistoryScores[64][64];
 unsigned int ButterflyScores[64][64];
 
 int MAXTIME = 10000;
-int MAXDEPTH = 32;
+int MAXDEPTH = 100;
+int CheckupNodeCount = 16384;
 
 Move Engine::IterativeDeepening()
 {
@@ -47,8 +48,8 @@ Move Engine::IterativeDeepening()
 	{
 		for(unsigned int j = 0;j<64;j++)
 		{
-			HistoryScores[i][j] /= 2;
-			ButterflyScores[i][j] /= 2;
+			HistoryScores[i][j] /= 8;
+			ButterflyScores[i][j] /= 8;
 		}
 	}
 
@@ -88,7 +89,8 @@ Move Engine::IterativeDeepening()
 		{
 			//line = deque<Move>();
 			ply = 0;
-			val = think(i,score - low,score + high,&line); //aspiration search
+			//val = think(i,score - low,score + high,&line); //aspiration search
+			val = AlphaBeta(i,score - low,score + high,CONS_NULLMOVE,&line,true,true);
 			//cout << mr.move.toString() << " " << mr.eval << endl;
 			if(val <= score - low)
 			{
@@ -107,9 +109,7 @@ Move Engine::IterativeDeepening()
         score = val;
 		//firstguess = val;
 		timer.Stop();
-		if(OUTPUT != OUTPUT_XBOARD)
-			cout << "info score cp " << score << " depth " << i << " nodes " << nodes << " nps " << getNPS(nodes,timer.ElapsedMilliseconds()) << " time " << timer.ElapsedMilliseconds() << " pv ";
-		//info score cp 13  depth 1 nodes 13 time 15 pv f1b5 
+		cout << "info score cp " << score << " depth " << i << " nodes " << nodes << " nps " << getNPS(nodes,timer.ElapsedMilliseconds()) << " time " << timer.ElapsedMilliseconds() << " pv ";
 
 		for(int i = 0;i<line.size();i++)
 		{
@@ -270,7 +270,7 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 	//	}
 	//}
 
-	vector<Move> vec = pos.generateMoves();
+	/*vector<Move> vec = pos.generateMoves();
 	if(vec.size()==0)
 	{
 		if(pos.underCheck(pos.turn))
@@ -281,7 +281,7 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 		{
 			return CONS_DRAW;
 		}
-	}
+	}*/
 
 	if(depth==0)
 	{
@@ -291,10 +291,15 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 	}
 
 	nodes++;
-	if(nodes%1024==0)
+	if(nodes%CheckupNodeCount==0)
 	{
 		checkup();
 		//nodes = 0;
+	}
+
+	if(isRepetition())
+	{
+		return 0;
 	}
 
 	int probe = Table.Probe(pos.TTKey,depth,alpha,beta);
@@ -359,14 +364,25 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 
 	//futility pruning
 	bool futilityprune = false; 
-	if(depth<3 && !pos.underCheck(pos.turn) && LeafEval(alpha,beta) + FutilityMargin[depth] <= alpha)
+	if(depth<3 && !pos.underCheck(pos.turn) && (LeafEval(alpha,beta) + FutilityMargin[depth] <= alpha))
 	{
 		futilityprune = true;
 	}
 
 	//movesort(vec,depth);
 	bool alpharaised = false;
+	bool foundlegal = false;
 	Move alphamove = CONS_NULLMOVE;
+	//vec = pos.generateMoves();
+	vector<Move> vec;
+	if(futilityprune)
+	{
+    	vec = pos.generateCaptures(); //search only captures in futility pruning
+	}
+	else
+	{
+		vec = pos.generateMoves();
+    }
 	for(unsigned int i = 0;i<vec.size();i++) //search
 	{
 		deque<Move> line;
@@ -377,36 +393,42 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 		{
 			cout << "info currmove " << m.toString() << endl;
 		}*/
-		ply++;
-		pos.forceMove(m);
-		score = 0;
-		/*if(popcnt(pos.Pieces[COLOR_WHITE][PIECE_QUEEN])+popcnt(pos.Pieces[COLOR_WHITE][PIECE_PAWN])>9 || popcnt(pos.Pieces[COLOR_BLACK][PIECE_QUEEN])+popcnt(pos.Pieces[COLOR_BLACK][PIECE_PAWN])>9)
+		if(!pos.makeMove(m))
 		{
-			x.display(0);
-			pos.display(0);
-			printBitset(x.Pieces[COLOR_BLACK][PIECE_PAWN]);
-			cout << "\n";
-			printBitset(pos.Pieces[COLOR_BLACK][PIECE_PAWN]);
-			cout << m.toString() << endl;
-			cout << lastmove.toString() << endl;
-			for(int i = 0;i<pos.movelist.size();i++)
-			{
-				cout << pos.movelist.at(i).toString() << " " << endl;
-			}
-			pos.unmakeMove(m);
-			return beta;
-		}*/
+			continue;
+		}
+		foundlegal = true;
+		ply++;
+		score = 0;
+		//if(popcnt(pos.Pieces[COLOR_WHITE][PIECE_QUEEN])+popcnt(pos.Pieces[COLOR_WHITE][PIECE_PAWN])>9 || popcnt(pos.Pieces[COLOR_BLACK][PIECE_QUEEN])+popcnt(pos.Pieces[COLOR_BLACK][PIECE_PAWN])>9)
+		//{
+		//	x.display(0);
+		//	pos.display(0);
+		//	printBitset(x.Pieces[COLOR_BLACK][PIECE_PAWN]);
+		//	cout << "\n";
+		//	printBitset(pos.Pieces[COLOR_BLACK][PIECE_PAWN]);
+		//	cout << m.toString() << endl;
+		//	cout << lastmove.toString() << endl;
+		//	for(int i = 0;i<pos.movelist.size();i++)
+		//	{
+		//		cout << pos.movelist.at(i).toString() << " " << endl;
+		//	}
+		//	cout << "";
+		//	//pos.unmakeMove(m);
+		//	//return beta;
+		//}
 
-		//futility pruning
 		int capturedpiece = m.getCapturedPiece();
 		int special = m.getSpecial();
-		if(futilityprune && capturedpiece==PIECE_NONE && (special==PIECE_NONE || special==PIECE_KING)
-			&& !pos.underCheck(pos.turn))
-		{
-			ply--;
-			pos.unmakeMove(m);
-			continue; //prune away non-capture, non-promotion moves in futility pruning
-		}
+
+		//futility pruning
+		//if(futilityprune && capturedpiece==SQUARE_EMPTY && (special==PIECE_NONE || special==PIECE_KING)
+		//	&& !pos.underCheck(pos.turn))
+		//{
+		//	ply--;
+		//	pos.unmakeMove(m);
+		//	continue; //prune away non-capture, non-promotion moves in futility pruning
+		//}
 
 		if(dopv && alpharaised && depth>=3) //principal variation search
 		{
@@ -433,34 +455,39 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 		}
 		ply--;
 		pos.unmakeMove(m);
-		/*if(popcnt(pos.Pieces[COLOR_WHITE][PIECE_QUEEN])+popcnt(pos.Pieces[COLOR_WHITE][PIECE_PAWN])>9 || popcnt(pos.Pieces[COLOR_BLACK][PIECE_QUEEN])+popcnt(pos.Pieces[COLOR_BLACK][PIECE_PAWN])>9)
-		{
-			x.display(0);
-			pos.display(0);
-			printBitset(x.Pieces[COLOR_BLACK][PIECE_PAWN]);
-			cout << "\n";
-			printBitset(pos.Pieces[COLOR_BLACK][PIECE_PAWN]);
-			cout << m.toString() << endl;
-			cout << lastmove.toString() << endl;
-			for(int i = 0;i<pos.movelist.size();i++)
-			{
-				cout << pos.movelist.at(i).toString() << " " << endl;
-			}
-			return beta;
-		}*/
+		//if(popcnt(pos.Pieces[COLOR_WHITE][PIECE_QUEEN])+popcnt(pos.Pieces[COLOR_WHITE][PIECE_PAWN])>9 || popcnt(pos.Pieces[COLOR_BLACK][PIECE_QUEEN])+popcnt(pos.Pieces[COLOR_BLACK][PIECE_PAWN])>9)
+		//{
+		//	x.display(0);
+		//	pos.display(0);
+		//	printBitset(x.Pieces[COLOR_BLACK][PIECE_PAWN]);
+		//	cout << "\n";
+		//	printBitset(pos.Pieces[COLOR_BLACK][PIECE_PAWN]);
+		//	cout << m.toString() << endl;
+		//	cout << lastmove.toString() << endl;
+		//	for(int i = 0;i<pos.movelist.size();i++)
+		//	{
+		//		cout << pos.movelist.at(i).toString() << " " << endl;
+		//	}
+		//	for(int i = 0;i<line.size();i++)
+		//	{
+		//		cout << line.at(i).toString() << " " << endl;
+		//	}
+		//	cout << "";
+		//	//return beta;
+		//}
 		if(score>=beta)
 		{
 			Table.Save(pos.TTKey,depth,score,TT_BETA,m);
-			if(capturedpiece==SQUARE_EMPTY)
+			if(capturedpiece==SQUARE_EMPTY && special!=PIECE_PAWN)
 			{
-				HistoryScores[m.getFrom()][m.getTo()]+=1<<depth;
+				HistoryScores[m.getFrom()][m.getTo()]+=depth*depth;
 				setKiller(m,depth);
 			}
 			return beta; //fail hard beta cutoff
 		}
 		else if(score>alpha)
 		{
-			//if(capturedpiece==SQUARE_EMPTY)
+			//if(capturedpiece==SQUARE_EMPTY && special!=PIECE_PAWN)
 				//ButterflyScores[m.getFrom()][m.getTo()]++;
 			bound = TT_EXACT;
 			alpha = score;
@@ -468,10 +495,49 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 			alphamove = m;
 			lineptr = line;
 		}
+		//else
+		//{
+			//if(capturedpiece==SQUARE_EMPTY && special!=PIECE_PAWN)
+				//ButterflyScores[m.getFrom()][m.getTo()]++;
+		//}
+	}
+	if(!foundlegal)
+	{
+		if(futilityprune)
+		{
+			vec = pos.generateMoves();
+			int flag = 1;
+			for(int i = 0;i<vec.size();i++)
+			{
+				if(pos.makeMove(m))
+				{
+					unmakeMove(m);
+					flag = 0;
+					break;
+				}
+			}
+			if(flag)
+			{
+				if(pos.underCheck(pos.turn))
+				{
+					return CONS_MATED;
+				}
+				else
+				{
+					return CONS_DRAW;
+				}
+			}
+		}
 		else
 		{
-			//if(capturedpiece==SQUARE_EMPTY)
-				//ButterflyScores[m.getFrom()][m.getTo()]++;
+			if(pos.underCheck(pos.turn))
+			{
+				return CONS_MATED;
+			}
+			else
+			{
+				return CONS_DRAW;
+			}
 		}
 	}
 	if(!(alphamove==CONS_NULLMOVE))
@@ -483,11 +549,12 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 	return alpha;
 }
 
-int Engine::getMoveScore(const Move& m)
+unsigned long long Engine::getMoveScore(const Move& m)
 {
 	int from = m.getFrom();
 	int to = m.getTo();
 	int capturedpiece = m.getCapturedPiece();
+	int special = m.getSpecial();
 	int score = 100000;
 	/*if(ply < PrincipalVariation.size())
 	{
@@ -501,9 +568,10 @@ int Engine::getMoveScore(const Move& m)
 		score += 400000;
 		return score;
 	}
-	if(capturedpiece!=SQUARE_EMPTY)
+	if(capturedpiece!=SQUARE_EMPTY || special==PIECE_PAWN)
 	{
-		if(StaticExchangeEvaluation(to,pos.turn)>=0)
+		//if(StaticExchangeEvaluation(m.getTo(),m.getFrom(),m.getMovingPiece(),m.getCapturedPiece())>=0)
+		if(StaticExchangeEvaluation(to,from,m.getMovingPiece(),capturedpiece)>=0)
 		{
 			score += 300000;
 		}
@@ -515,7 +583,7 @@ int Engine::getMoveScore(const Move& m)
 	else
 	{
 		if(((from==KillerMoves[0][ply].getFrom() && to==KillerMoves[0][ply].getTo()) 
-			|| (from==KillerMoves[1][ply].getFrom() && to==KillerMoves[1][ply].getTo())) && m.getCapturedPiece()==SQUARE_EMPTY)
+			|| (from==KillerMoves[1][ply].getFrom() && to==KillerMoves[1][ply].getTo())))
 		{
 			score += 200000;
 		}
@@ -526,11 +594,12 @@ int Engine::getMoveScore(const Move& m)
 
 Move Engine::getHighestScoringMove(vector<Move>& moves,int currentmove)
 {
-	int bigmove = 0;
-	int bigscore = getMoveScore(currentmove);
+	int bigmove = currentmove;
+	unsigned long long bigscore = getMoveScore(moves.at(currentmove));
+	unsigned long long x;
 	for(int i = currentmove+1;i<moves.size();i++)
 	{
-		int x = getMoveScore(moves.at(i));
+		x = getMoveScore(moves.at(i));
 		if(x>bigscore)
 		{
 			bigscore = x;
@@ -602,6 +671,36 @@ void Engine::setKiller(Move m,int depth)
 		KillerMoves[0][ply] = m;
 		//cout << "Killer set: " << m.toString() << endl;
 	}
+}
+
+bool Engine::isRepetition()
+{
+	int size = pos.movelist.size();
+	int rep = 0;
+	Bitset hash = pos.TTKey;
+	int i;
+	Position p = pos;
+	for(i = 1;i<=size;i++)
+	{
+		Move m = p.movelist.at(size-i);
+		if(m!=CONS_NULLMOVE && m.getMovingPiece()!=PIECE_PAWN && m.getCapturedPiece()==SQUARE_EMPTY)
+		{
+			p.unmakeMove(m);
+			if(p.TTKey==hash)
+			{
+				rep++;
+				if(rep>=2)
+				{
+					return true;
+				}
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+	return false;
 }
 
 void searchinit()

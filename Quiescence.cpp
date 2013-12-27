@@ -3,7 +3,7 @@
 int Engine::QuiescenceSearch(int alpha,int beta,Move lastmove)
 {
 	nodes++;
-	if(nodes%1024==0)
+	if(nodes%CheckupNodeCount==0)
 	{
 		checkup();
 		//nodes = 0;
@@ -22,9 +22,14 @@ int Engine::QuiescenceSearch(int alpha,int beta,Move lastmove)
 			m = getHighestScoringMove(vec,i);
 			if(m.getTo() == to) //capturing a piece that just captured a piece in the last move
 			{
-				pos.forceMove(m);
+				if(!pos.makeMove(m))
+				{
+					continue;
+				}
+				ply++;
 				score = -QuiescenceSearch(-beta,-alpha,m);
 				pos.unmakeMove(m);
+				ply--;
 				if(score>=beta)
 					return score;
 				if(score>alpha)
@@ -49,7 +54,7 @@ int Engine::QuiescenceSearchStandPat(int alpha,int beta,Move lastmove)
 		checkup();
 		//nodes = 0;
 	}
-	if(pos.getGameStatus()!=STATUS_NOTOVER)
+	/*if(pos.getGameStatus()!=STATUS_NOTOVER)
 	{
 		int val = LeafEval(alpha,beta);
 		if(val >= beta)
@@ -57,13 +62,13 @@ int Engine::QuiescenceSearchStandPat(int alpha,int beta,Move lastmove)
 		else if(val < alpha)
 			return alpha;
 		return val;
-	}
+	}*/
 	int stand_pat = LeafEval(alpha,beta);
 	if(stand_pat >= beta) //standpat
 	{
 		return beta;
 	}
-	if(stand_pat < alpha-200) //delta pruning
+	if(stand_pat < alpha-900) //big delta pruning
 	{
 		return alpha;
 	}
@@ -74,12 +79,28 @@ int Engine::QuiescenceSearchStandPat(int alpha,int beta,Move lastmove)
 	Move m;
 	int score = 0;
     vector<Move> vec = pos.generateCaptures();
+	int material = getBoardMaterial();
 	for(int i = 0;i<vec.size();i++)
 	{
 		m = getHighestScoringMove(vec,i);
-		pos.forceMove(m);
+		int special = m.getSpecial();
+		int captured = m.getCapturedPiece();
+		if((stand_pat + PieceMaterial[getSquare2Piece(captured)] + 200 < alpha) && //delta pruning
+		   (special!=PIECE_BISHOP && special!=PIECE_KNIGHT && special!=PIECE_ROOK && special!=PIECE_QUEEN) && //not a promotion
+           (material > EndgameMaterial))
+		{
+            continue;
+		}
+		if(StaticExchangeEvaluation(m.getTo(),m.getFrom(),m.getMovingPiece(),captured)<0)
+			continue;
+		if(!pos.makeMove(m))
+		{
+			continue;
+		}
+		ply++;
 		score = -QuiescenceSearchStandPat(-beta,-alpha,m);
 		pos.unmakeMove(m);
+		ply--;
 		if(score >= beta)
 			return beta;
 		if(alpha < score)
