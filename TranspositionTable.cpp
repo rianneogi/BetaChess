@@ -17,7 +17,6 @@ TranspositionTable::TranspositionTable(unsigned long long s)
 	entries = new HashEntry[size];
 }
 
-
 TranspositionTable::~TranspositionTable()
 {
 	delete [] entries;

@@ -68,7 +68,7 @@ int Engine::QuiescenceSearchStandPat(int alpha,int beta,Move lastmove)
 	{
 		return beta;
 	}
-	if(stand_pat < alpha-900) //big delta pruning
+	if(stand_pat < alpha-PieceMaterial[PIECE_QUEEN]) //big delta pruning
 	{
 		return alpha;
 	}
@@ -86,7 +86,7 @@ int Engine::QuiescenceSearchStandPat(int alpha,int beta,Move lastmove)
 		int special = m.getSpecial();
 		int captured = m.getCapturedPiece();
 		if((stand_pat + PieceMaterial[getSquare2Piece(captured)] + 200 < alpha) && //delta pruning
-		   (special!=PIECE_BISHOP && special!=PIECE_KNIGHT && special!=PIECE_ROOK && special!=PIECE_QUEEN) && //not a promotion
+		   (special!=PIECE_QUEEN && special!=PIECE_KNIGHT  && special!=PIECE_ROOK && special!=PIECE_BISHOP) && //not a promotion
            (material > EndgameMaterial))
 		{
             continue;

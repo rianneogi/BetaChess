@@ -2,7 +2,6 @@
 #define ENGINE_H_INCLUDED
 
 #include "Position.h"
-#include "Node.h"
 #include "TranspositionTable.h"
 #include "Clock.h"
 

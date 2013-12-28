@@ -348,7 +348,7 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 	int pieceCount = popcnt(Pieces);
     if(cannull && depth>=3 && pos.underCheck(pos.turn)==false && pieceCount>6) //not endgame
     {
-		int R = depth > 5 ? 3 : 2; //dynamic depth-based reduction
+		int R = depth > 6 ? 4 : 2; //dynamic depth-based reduction
 		m = CONS_NULLMOVE;
 		ply++;
 		pos.forceMove(m);
@@ -532,7 +532,7 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 		{
 			if(pos.underCheck(pos.turn))
 			{
-				return CONS_MATED;
+				return CONS_MATED+ply;
 			}
 			else
 			{

@@ -132,6 +132,11 @@ void Position::forceMove(Move const& m)
 	Bitset movingpiece = m.getMovingPiece();
 	Bitset capturedpiece = m.getCapturedPiece();
 	Bitset special = m.getSpecial();
+	int cast[2][2];
+	cast[0][0] = castling[0][0];
+	cast[0][1] = castling[0][1];
+	cast[1][0] = castling[1][0];
+	cast[1][1] = castling[1][1];
 	if(capturedpiece) //if a piece is captured update captured player's pieces
 	{
 		if(special==PIECE_QUEEN || special==PIECE_KNIGHT || special==PIECE_ROOK || special==PIECE_BISHOP) //promotion
@@ -348,6 +353,23 @@ void Position::forceMove(Move const& m)
         epsquare = 0;
     }
 
+	if(cast[0][0]!=castling[0][0]) //check if castling values have changed
+	{
+		TTKey ^= TT_CastlingKey[0][0];
+	}
+	if(cast[0][1]!=castling[0][1])
+	{
+		TTKey ^= TT_CastlingKey[0][1];
+	}
+	if(cast[1][0]!=castling[1][0])
+	{
+		TTKey ^= TT_CastlingKey[1][0];
+	}
+	if(cast[1][1]!=castling[1][1])
+	{
+		TTKey ^= TT_CastlingKey[1][1];
+	}
+
     turn = getOpponent(turn);
 	TTKey ^= TT_ColorKey;	
 }
@@ -532,10 +554,30 @@ void Position::unmakeMove(Move const& m)
         OccupiedSq90 ^= getPos2Bit(getturn90(x));
     }
 
-	castling[COLOR_WHITE][CASTLE_KINGSIDE] = m.getWKC(); //setting castling rights
-	castling[COLOR_WHITE][CASTLE_QUEENSIDE] = m.getWQC();
-	castling[COLOR_BLACK][CASTLE_KINGSIDE] = m.getBKC();
-	castling[COLOR_BLACK][CASTLE_QUEENSIDE] = m.getBQC();
+	int wkc = m.getWKC();
+	int wqc = m.getWQC();
+	int bkc = m.getBKC();
+	int bqc = m.getBQC();
+	if(castling[COLOR_WHITE][CASTLE_KINGSIDE] != wkc) //reset castling
+	{
+		castling[COLOR_WHITE][CASTLE_KINGSIDE] = wkc;
+		TTKey ^= TT_CastlingKey[COLOR_WHITE][CASTLE_KINGSIDE];
+	}
+	if(castling[COLOR_WHITE][CASTLE_QUEENSIDE] != wqc)
+	{
+		castling[COLOR_WHITE][CASTLE_QUEENSIDE] = wqc;
+		TTKey ^= TT_CastlingKey[COLOR_WHITE][CASTLE_QUEENSIDE];
+	}
+	if(castling[COLOR_BLACK][CASTLE_KINGSIDE] != bkc)
+	{
+		castling[COLOR_BLACK][CASTLE_KINGSIDE] = bkc;
+		TTKey ^= TT_CastlingKey[COLOR_BLACK][CASTLE_KINGSIDE];
+	}
+	if(castling[COLOR_BLACK][CASTLE_QUEENSIDE] != bqc)
+	{
+		castling[COLOR_BLACK][CASTLE_QUEENSIDE] = bqc;
+		TTKey ^= TT_CastlingKey[COLOR_BLACK][CASTLE_QUEENSIDE];
+	}
 	epsquare = m.getEP(); //setting ep square
 }
 
