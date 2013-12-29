@@ -6,7 +6,7 @@
 #include "TranspositionTable.h"
 
 enum CASTLE {CASTLE_KINGSIDE,CASTLE_QUEENSIDE};
-enum GAMESTATUS{STATUS_NOTOVER,STATUS_WHITEMATED,STATUS_BLACKMATED,STATUS_STALEMATE,STATUS_INSUFFICIENTMAT};
+enum GAMESTATUS{STATUS_NOTOVER,STATUS_WHITEMATED,STATUS_BLACKMATED,STATUS_STALEMATE,STATUS_INSUFFICIENTMAT,STATUS_3FOLDREP};
 
 extern string pieceStrings[13];
 
@@ -23,7 +23,8 @@ public:
     int turn;
     Bitset castling[2][2];
     Bitset epsquare;
-	vector<Move> movelist; //debug
+	vector<Move> movelist;
+	vector<Bitset> hashlist;
 
     Position();
     Position(Position const& pos,Move const& m);
@@ -49,6 +50,7 @@ public:
 	int getColorPieces(int turn);
 	void display(int flip);
 	void takebackMove();
+	bool isRepetition();
 };
 unsigned long long getRookAttacks(int sq,unsigned long long occ,unsigned long long occ90);
 unsigned long long getBishopAttacks(int sq,unsigned long long occ45,unsigned long long occ135);

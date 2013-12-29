@@ -110,7 +110,6 @@ Move Engine::IterativeDeepening()
 		//firstguess = val;
 		timer.Stop();
 		cout << "info score cp " << score << " depth " << i << " nodes " << nodes << " nps " << getNPS(nodes,timer.ElapsedMilliseconds()) << " time " << timer.ElapsedMilliseconds() << " pv ";
-
 		for(int i = 0;i<line.size();i++)
 		{
 			cout << line.at(i).toString() << " ";
@@ -286,7 +285,7 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 	if(depth==0)
 	{
 		int value = QuiescenceSearchStandPat(alpha,beta,lastmove); //go to quiescence
-		//Table.Save(pos.TTKey,depth,value,TT_EXACT);
+		Table.Save(pos.TTKey,0,value,TT_EXACT,CONS_NULLMOVE);
 		return value;
 	}
 
@@ -297,7 +296,7 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 		//nodes = 0;
 	}
 
-	if(isRepetition())
+	if(pos.isRepetition())
 	{
 		return 0;
 	}
@@ -310,6 +309,10 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 		if(!(ttbestmove==CONS_NULLMOVE))
 		{
 			variation->push_front(ttbestmove);
+			return probe;
+		}
+		else if(ply!=0)
+		{
 			return probe;
 		}
 	}
@@ -671,36 +674,6 @@ void Engine::setKiller(Move m,int depth)
 		KillerMoves[0][ply] = m;
 		//cout << "Killer set: " << m.toString() << endl;
 	}
-}
-
-bool Engine::isRepetition()
-{
-	int size = pos.movelist.size();
-	int rep = 0;
-	Bitset hash = pos.TTKey;
-	int i;
-	Position p = pos;
-	for(i = 1;i<=size;i++)
-	{
-		Move m = p.movelist.at(size-i);
-		if(m!=CONS_NULLMOVE && m.getMovingPiece()!=PIECE_PAWN && m.getCapturedPiece()==SQUARE_EMPTY)
-		{
-			p.unmakeMove(m);
-			if(p.TTKey==hash)
-			{
-				rep++;
-				if(rep>=2)
-				{
-					return true;
-				}
-			}
-		}
-		else
-		{
-			return false;
-		}
-	}
-	return false;
 }
 
 void searchinit()

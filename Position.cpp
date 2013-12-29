@@ -74,6 +74,7 @@ Position::Position()
 	}
 
 	movelist = vector<Move>(0);
+	hashlist = vector<Bitset>(0);
 }
 
 Position::Position(Position const& pos,Move const& m)
@@ -108,6 +109,9 @@ Position::Position(Position const& pos,Move const& m)
 
 	TTKey = pos.TTKey;
 
+	movelist = pos.movelist;
+	hashlist = pos.hashlist;
+
     forceMove(m);
 }
 
@@ -119,7 +123,8 @@ void Position::forceMove(Move const& m)
 {
 	/*if(DEBUG)
 		cout << "made " << m.toString() << endl;*/
-	movelist.push_back(m); //debug
+	movelist.push_back(m);
+	hashlist.push_back(TTKey);
 	if(m==CONS_NULLMOVE) //nullmove
 	{
 		turn = getOpponent(turn);
@@ -389,7 +394,8 @@ void Position::unmakeMove(Move const& m)
 {
 	/*if(DEBUG)
 		cout << "unmade " << m.toString() << endl;*/
-	movelist.pop_back(); //debug
+	movelist.pop_back();
+	hashlist.pop_back();
 	if(m==CONS_NULLMOVE) //nullmove
 	{
 		turn = getOpponent(turn);
@@ -1293,6 +1299,10 @@ Move Position::makeCapture(int piece, int n)
 
 int Position::getGameStatus()
 {
+	if(isRepetition())
+	{
+		return STATUS_3FOLDREP;
+	}
 	if(generateMoves().size()==0)
 	{
 		if(underCheck(turn) && turn==COLOR_WHITE)
@@ -1309,6 +1319,33 @@ int Position::getGameStatus()
 		}
 	}
 	return STATUS_NOTOVER;
+}
+
+bool Position::isRepetition()
+{
+	int rep = 0;
+	int i;
+	int size = hashlist.size();
+	for(int i = 1;i<=size;i++)
+	{
+		Move m = movelist.at(size-i);
+		if(m!=CONS_NULLMOVE && m.getMovingPiece()!=PIECE_PAWN && m.getCapturedPiece()==SQUARE_EMPTY)
+		{
+			if(hashlist.at(size-i)==TTKey)
+			{
+				rep++;
+				if(rep>=2)
+				{
+					return true;
+				}
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+	return false;
 }
 
 unsigned long long getRookAttacks(int sq,unsigned long long occ,unsigned long long occ90)

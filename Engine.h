@@ -47,7 +47,6 @@ class Engine
 	void ageHistoryTable();
 	void checkup();
 	void setKiller(Move m,int depth);
-	bool isRepetition();
 
 	//Quiescence.cpp
 	int QuiescenceSearch(int alpha,int beta,Move lastmove);
