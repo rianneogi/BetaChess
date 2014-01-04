@@ -6,6 +6,7 @@
 ///TODO
 
 ///BUGS
+// Search doesn't consider enpassant moves even though they are generated my movegen
 // FIXED - Engine crashes when near mate
 // FIXED - Bug where after calculating upto depth 6 then calculating upto depth 5 after e2e4 e7e5 leads to messed up engine position
 // FIXED - Bug where calculation in depth 6 or above leads to messed up engine position
@@ -14,6 +15,8 @@
 ///BUGS
 
 ///BUILDS
+// Build 32 - 04-01-2014 - Added epsquare to TTKey
+// Build 31 - 29-12-2013 - Fixed 3-fold repetition check
 // Build 30 - 28-12-2013 - Added Castling to TTKey
 // Build 29 - 28-12-2013 - Reduced queen out early penalty, improved Qsearch by increase margin for big delta pruning, added 3-fold repetition check
 // Build 28 - Improved eval, added huge penalty for bringing the queen out early, now beats Faile consistently
@@ -100,18 +103,10 @@ int main(int argc, char* args[])
 	searchinit();
 	evalinit();
 	TTinit();
-	/*for(int i = 0;i<32;i++)
-	{
-		cout << i << endl;
-		printBitset(getKingShield1(COLOR_BLACK,i));
-		cout << "s2" << endl;
-		printBitset(getKingShield2(COLOR_BLACK,i));
-		cout << "field" << endl;
-		printBitset(getKingField(COLOR_BLACK,i));
-	}*/
-	//cout << getStringToken("position startpos",' ',2) << endl;
     cout << "Initialization done" << endl;
     Interface i = Interface();
+	try{
     i.start();
+	}catch(exception e) {cout << e.what() << endl;}
     return 0;
 }

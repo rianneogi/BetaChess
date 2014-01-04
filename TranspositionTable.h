@@ -8,7 +8,7 @@ enum BOUNDTYPE{TT_EXACT,TT_ALPHA,TT_BETA};
 extern Bitset TT_PieceKey[2][6][64];
 extern Bitset TT_ColorKey;
 extern Bitset TT_CastlingKey[2][2];
-extern Bitset TT_EPKey[8];
+extern Bitset TT_EPKey[64];
 
 struct HashEntry
 {

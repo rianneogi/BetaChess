@@ -372,6 +372,10 @@ void Interface::info()
 	{
 		cout << e1.pos.TTKey << endl;
 	}
+	if(s=="rep")
+	{
+		cout << board.pos.isRepetition() << endl;
+	}
 }
 
 void Interface::help()
@@ -491,6 +495,10 @@ void Interface::makeMove()
 			else if(status==STATUS_INSUFFICIENTMAT)
 			{
 				cout << "Its a draw due to insufficient material!" << endl;
+			}
+			else if(status==STATUS_3FOLDREP)
+			{
+				cout << "Its a draw due to 3-fold repetition!" << endl;
 			}
         }
     }

@@ -3,7 +3,7 @@
 Bitset TT_PieceKey[2][6][64];
 Bitset TT_ColorKey;
 Bitset TT_CastlingKey[2][2];
-Bitset TT_EPKey[8];
+Bitset TT_EPKey[64];
 
 int CONS_TTUNKNOWN = -32767;
 
@@ -97,7 +97,7 @@ void TTinit()
 		}
     }
 
-    for (int i=0; i<8; i++)
+    for (int i=0; i<64; i++)
     {
         TT_EPKey[i] = TTRandom();
     }

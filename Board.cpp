@@ -39,20 +39,5 @@ void Board::generateMoves()
 
 int Board::getGameStatus()
 {
-	if(moves.size()==0)
-	{
-		if(pos.underCheck(pos.turn) && pos.turn==COLOR_WHITE)
-		{
-			return STATUS_WHITEMATED;
-		}
-		else if(pos.underCheck(pos.turn) && pos.turn==COLOR_BLACK)
-		{
-			return STATUS_BLACKMATED;
-		}
-		else
-		{
-			return STATUS_STALEMATE;
-		}
-	}
-	return STATUS_NOTOVER;
+	return pos.getGameStatus();
 }

@@ -282,10 +282,15 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 		}
 	}*/
 
+	if(pos.underCheck(pos.turn))
+	{
+		depth++;
+	}
+
 	if(depth==0)
 	{
 		int value = QuiescenceSearchStandPat(alpha,beta,lastmove); //go to quiescence
-		Table.Save(pos.TTKey,0,value,TT_EXACT,CONS_NULLMOVE);
+		//Table.Save(pos.TTKey,0,value,TT_EXACT,CONS_NULLMOVE);
 		return value;
 	}
 
@@ -298,6 +303,7 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 
 	if(pos.isRepetition())
 	{
+		Table.Save(pos.TTKey,depth,0,TT_EXACT,CONS_NULLMOVE);
 		return 0;
 	}
 
@@ -311,10 +317,10 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 			variation->push_front(ttbestmove);
 			return probe;
 		}
-		else if(ply!=0)
+		/*else if(ply!=0)
 		{
 			return probe;
-		}
+		}*/
 	}
 
 	int bound = TT_ALPHA;
@@ -571,10 +577,20 @@ unsigned long long Engine::getMoveScore(const Move& m)
 		score += 400000;
 		return score;
 	}
-	if(capturedpiece!=SQUARE_EMPTY || special==PIECE_PAWN)
+	if(capturedpiece!=SQUARE_EMPTY)
 	{
-		//if(StaticExchangeEvaluation(m.getTo(),m.getFrom(),m.getMovingPiece(),m.getCapturedPiece())>=0)
 		if(StaticExchangeEvaluation(to,from,m.getMovingPiece(),capturedpiece)>=0)
+		{
+			score += 300000;
+		}
+		else
+		{
+			score -= 100000;
+		}
+	}
+	else if(special==PIECE_PAWN) //enpassant are also captures
+	{
+		if(StaticExchangeEvaluation(to,from,m.getMovingPiece(),PIECE_PAWN)>=0)
 		{
 			score += 300000;
 		}

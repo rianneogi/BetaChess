@@ -72,6 +72,7 @@ Position::Position()
 			TTKey ^= TT_CastlingKey[i][j];
 		}
 	}
+	TTKey ^= TT_EPKey[epsquare];
 
 	movelist = vector<Move>(0);
 	hashlist = vector<Bitset>(0);
@@ -128,7 +129,12 @@ void Position::forceMove(Move const& m)
 	if(m==CONS_NULLMOVE) //nullmove
 	{
 		turn = getOpponent(turn);
-		epsquare = 0;
+		if(epsquare!=0)
+		{
+			TTKey ^= TT_EPKey[epsquare];
+			TTKey ^= TT_EPKey[0];
+			epsquare = 0;
+		}
 		TTKey ^= TT_ColorKey;
 		return;
 	}
@@ -342,20 +348,28 @@ void Position::forceMove(Move const& m)
 		}*/
 		if(turn==COLOR_WHITE && getRank(int(from))==1 && getRank(int(to))==3)
 		{
+			TTKey ^= TT_EPKey[epsquare];
 			epsquare = getPlus8(from);
+			TTKey ^= TT_EPKey[epsquare];
 		}
 		else if(turn==COLOR_BLACK && getRank(int(from))==6 && getRank(int(to))==4)
 		{
+			TTKey ^= TT_EPKey[epsquare];
 			epsquare = getPlus8(to);
+			TTKey ^= TT_EPKey[epsquare];
 		}
-		else
+		else if(epsquare!=0)
 		{
+			TTKey ^= TT_EPKey[epsquare];
 			epsquare = 0;
+			TTKey ^= TT_EPKey[0];
 		}
     }
-    else
+    else if(epsquare!=0)
     {
+		TTKey ^= TT_EPKey[epsquare];
         epsquare = 0;
+		TTKey ^= TT_EPKey[0];
     }
 
 	if(cast[0][0]!=castling[0][0]) //check if castling values have changed
@@ -399,8 +413,14 @@ void Position::unmakeMove(Move const& m)
 	if(m==CONS_NULLMOVE) //nullmove
 	{
 		turn = getOpponent(turn);
-		epsquare = m.getEP();
 		TTKey ^= TT_ColorKey;
+		int ep = m.getEP(); //setting ep square
+		if(epsquare != ep)
+		{
+			TTKey ^= TT_EPKey[epsquare];
+			TTKey ^= TT_EPKey[ep];
+			epsquare = ep;
+		}
 		return;
 	}
 	Bitset from = m.getFrom();
@@ -584,7 +604,13 @@ void Position::unmakeMove(Move const& m)
 		castling[COLOR_BLACK][CASTLE_QUEENSIDE] = bqc;
 		TTKey ^= TT_CastlingKey[COLOR_BLACK][CASTLE_QUEENSIDE];
 	}
-	epsquare = m.getEP(); //setting ep square
+	int ep = m.getEP(); //setting ep square
+	if(epsquare != ep)
+	{
+		TTKey ^= TT_EPKey[epsquare];
+		TTKey ^= TT_EPKey[ep];
+		epsquare = ep;
+	}
 }
 
 std::vector<Move> Position::generateMoves()
