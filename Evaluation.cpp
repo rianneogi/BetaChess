@@ -557,6 +557,7 @@ int Engine::getBoardMaterial()
 
 int Engine::StaticExchangeEvaluation(int to, int from,int movpiece,int capt)
 {
+	capt = getSquare2Piece(capt);
 	int gain[100],d=0;
     Bitset occ = pos.OccupiedSq;
     Bitset occ90 = pos.OccupiedSq90;
@@ -570,15 +571,17 @@ int Engine::StaticExchangeEvaluation(int to, int from,int movpiece,int capt)
 			pieces[i][j] = pos.Pieces[i][j];
 		}
 	}
-	int turn = getOpponent(pos.turn);
-	gain[d] = MaterialValues[getPiece2Square(getSquare2Piece(capt),COLOR_WHITE)];
+	int turn = pos.turn;
+	gain[d] = PieceMaterial[capt];
+	//cout << "gain " << d << " is " << gain[0] << endl;
 	Move m = CONS_NULLMOVE;
 	do
 	{
 		//cout << m.toString() << movpiece << endl;
 		d++; // next depth and side
-        gain[d] = MaterialValues[getPiece2Square(getSquare2Piece(capt),COLOR_WHITE)] - gain[d-1]; // speculative store, if defended
+        gain[d] = PieceMaterial[movpiece] - gain[d-1]; // speculative store, if defended
 		if (max (-gain[d-1], gain[d]) < 0) break; // pruning does not influence the result
+		//cout << "gain " << d << " is " << gain[d] << endl;
 
         pos.OccupiedSq ^= getPos2Bit(from); // reset bit in temporary occupancy (for x-Rays)
 		pos.OccupiedSq90 ^= getPos2Bit(getturn90(from));
@@ -604,11 +607,12 @@ int Engine::StaticExchangeEvaluation(int to, int from,int movpiece,int capt)
 			pos.Pieces[i][j] = pieces[i][j];
 		}
 	}
-
-	while(d>0)
+	//cout << "gain " << d << " is " << gain[d] << endl;
+	while(--d)
 	{
-        gain[d-1]= -max (-gain[d-1], gain[d]);
-	    d--;
+        gain[d-1]= -max(-gain[d-1], gain[d]);
+	    //d--;
+		//cout << "gain " << d << " is " << gain[d] << endl;
 	}
 	return gain[0];
 }

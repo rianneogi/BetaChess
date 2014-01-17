@@ -15,6 +15,7 @@
 ///BUGS
 
 ///BUILDS
+// Build 33 - 19-01-2014 - Fixed SEE
 // Build 32 - 04-01-2014 - Added epsquare to TTKey
 // Build 31 - 29-12-2013 - Fixed 3-fold repetition check
 // Build 30 - 28-12-2013 - Added Castling to TTKey

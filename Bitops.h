@@ -189,7 +189,7 @@ inline int getRank(int n)
     return Rank[n];
 }
 
-inline int getDiag(int n) //assuming n >= 0 and n <= 63
+inline int getDiag(int n)
 {
     return Diagonal[n];
 }

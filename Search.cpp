@@ -590,7 +590,7 @@ unsigned long long Engine::getMoveScore(const Move& m)
 	}
 	else if(special==PIECE_PAWN) //enpassant are also captures
 	{
-		if(StaticExchangeEvaluation(to,from,m.getMovingPiece(),PIECE_PAWN)>=0)
+		if(StaticExchangeEvaluation(to,from,m.getMovingPiece(),SQUARE_WHITEPAWN)>=0)
 		{
 			score += 300000;
 		}

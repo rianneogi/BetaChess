@@ -214,6 +214,16 @@ void Interface::start()
 			}
 			cout << endl;
 		}
+		else if(s=="see")
+		{
+			string s2;
+			cin >> s2;
+			int m1 = Sq2Int(s2);
+			cin >> s2;
+			int m2 = Sq2Int(s2);
+			cout << m1 << " " << m2 << " " << Square2Piece[board.pos.Squares[m1]] << Square2Piece[board.pos.Squares[m2]] << endl;
+			cout << e1.StaticExchangeEvaluation(m2,m1,Square2Piece[board.pos.Squares[m1]],board.pos.Squares[m2]) << endl;
+		}
         else if(s=="help" || s=="?")
         {
             help();
