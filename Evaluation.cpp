@@ -59,9 +59,9 @@ int SafetyTable[100] = {
 };
 
 //Pawn Structure
-int NoPawnsPenalty = 32;
-int DoubledPawnPenalty[8] = {13,17,20,23,23,20,17,13};
-int IsolatedPawnPenalty[8] = {7,10,18,30,30,18,10,7};
+int NoPawnsPenalty = 64;
+int DoubledPawnPenalty[8] = {26,34,40,46,46,40,34,26};
+int IsolatedPawnPenalty[8] = {14,20,36,60,60,36,20,14};
 int PassedPawnBonus[64] = {  0,  0,  0,  0,  0,  0,  0,  0,
 						     5, 10, 10, 10, 10, 10, 10,  5,
 						    10, 20, 20, 20, 20, 20, 20, 10,
@@ -71,8 +71,8 @@ int PassedPawnBonus[64] = {  0,  0,  0,  0,  0,  0,  0,  0,
 						    90,120,120,120,120,120,120, 90,
 						   200,200,200,200,200,200,200,200};
 int BlockedPawnPenalty[64] = {   0,  0,  0,  0,  0,  0,  0,  0,
-	                             1,  1,  2, 15, 15,  5,  1,  1,
-								 0,  0,  0,  5,  5,  0,  0,  0,
+	                             2,  2,  4, 30, 30, 10,  2,  2,
+								 0,  0,  0, 10, 10,  0,  0,  0,
 								 0,  0,  0,  0,  0,  0,  0,  0,
 								 0,  0,  0,  0,  0,  0,  0,  0,
 								 0,  0,  0,  0,  0,  0,  0,  0,
