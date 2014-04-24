@@ -32,17 +32,17 @@ int RookAdj[9] =   {15,12, 9, 6, 3, 0,-3,-6,-9};
 int BishopPawnSameColor[9] = {15,12,9,6,3,0,-3,-6,-9};
 
 //King Safety
-int PawnShield1Bonus = 30;
-int PawnShield2Bonus = 14;
-int BishopShieldBonus = 18;
-int KingOnHalfOpenFilePenalty = 30; //penalty for king being on half open files
-int KingOnOpenFilePenalty = 70; //penalty for king being on open files
-int KingAdjHalfOpenFilePenalty = 24; //penalty for king being adjacent to half open files
-int KingAdjOpenFilePenalty = 42; //penalty for king being adjacent to open files
-int KingOnRookFilePenalty = 20; //penalty for king being on an opponent semiopen file with a rook on it
-int KingAdjRookFilePenalty = 10; //penalty for king being adjacent an opponent semiopen file with a rook on it
+int PawnShield1Bonus = 23;
+int PawnShield2Bonus = 11;
+int BishopShieldBonus = 14;
+int KingOnHalfOpenFilePenalty = 23; //penalty for king being on half open files
+int KingOnOpenFilePenalty = 53; //penalty for king being on open files
+int KingAdjHalfOpenFilePenalty = 18; //penalty for king being adjacent to half open files
+int KingAdjOpenFilePenalty = 39; //penalty for king being adjacent to open files
+int KingOnRookFilePenalty = 15; //penalty for king being on an opponent semiopen file with a rook on it
+int KingAdjRookFilePenalty = 8; //penalty for king being adjacent an opponent semiopen file with a rook on it
 int AttackWeights[6] = {2,6,6,6,8,0};
-int KingBetweenRooksPenalty = 60;
+int KingBetweenRooksPenalty = 45;
 //int NoPawnShieldPenalty = 15;
 
 int SafetyTable[100] = {
