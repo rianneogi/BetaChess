@@ -32,17 +32,17 @@ int RookAdj[9] =   {15,12, 9, 6, 3, 0,-3,-6,-9};
 int BishopPawnSameColor[9] = {15,12,9,6,3,0,-3,-6,-9};
 
 //King Safety
-int PawnShield1Bonus = 15;
-int PawnShield2Bonus = 7;
-int BishopShieldBonus = 9;
-int KingOnHalfOpenFilePenalty = 15; //penalty for king being on half open files
-int KingOnOpenFilePenalty = 35; //penalty for king being on open files
-int KingAdjHalfOpenFilePenalty = 12; //penalty for king being adjacent to half open files
-int KingAdjOpenFilePenalty = 26; //penalty for king being adjacent to open files
-int KingOnRookFilePenalty = 10; //penalty for king being on an opponent semiopen file with a rook on it
-int KingAdjRookFilePenalty = 5; //penalty for king being adjacent an opponent semiopen file with a rook on it
-int AttackWeights[6] = {1,3,3,3,4,0};
-int KingBetweenRooksPenalty = 30;
+int PawnShield1Bonus = 30;
+int PawnShield2Bonus = 14;
+int BishopShieldBonus = 18;
+int KingOnHalfOpenFilePenalty = 30; //penalty for king being on half open files
+int KingOnOpenFilePenalty = 70; //penalty for king being on open files
+int KingAdjHalfOpenFilePenalty = 24; //penalty for king being adjacent to half open files
+int KingAdjOpenFilePenalty = 42; //penalty for king being adjacent to open files
+int KingOnRookFilePenalty = 20; //penalty for king being on an opponent semiopen file with a rook on it
+int KingAdjRookFilePenalty = 10; //penalty for king being adjacent an opponent semiopen file with a rook on it
+int AttackWeights[6] = {2,6,6,6,8,0};
+int KingBetweenRooksPenalty = 60;
 //int NoPawnShieldPenalty = 15;
 
 int SafetyTable[100] = {
@@ -59,9 +59,9 @@ int SafetyTable[100] = {
 };
 
 //Pawn Structure
-int NoPawnsPenalty = 64;
-int DoubledPawnPenalty[8] = {26,34,40,46,46,40,34,26};
-int IsolatedPawnPenalty[8] = {14,20,36,60,60,36,20,14};
+int NoPawnsPenalty = 32;
+int DoubledPawnPenalty[8] = {13,17,20,23,23,20,17,13};
+int IsolatedPawnPenalty[8] = {7,10,18,30,30,18,10,7};
 int PassedPawnBonus[64] = {  0,  0,  0,  0,  0,  0,  0,  0,
 						     5, 10, 10, 10, 10, 10, 10,  5,
 						    10, 20, 20, 20, 20, 20, 20, 10,
@@ -71,8 +71,8 @@ int PassedPawnBonus[64] = {  0,  0,  0,  0,  0,  0,  0,  0,
 						    90,120,120,120,120,120,120, 90,
 						   200,200,200,200,200,200,200,200};
 int BlockedPawnPenalty[64] = {   0,  0,  0,  0,  0,  0,  0,  0,
-	                             2,  2,  4, 30, 30, 10,  2,  2,
-								 0,  0,  0, 10, 10,  0,  0,  0,
+	                             1,  1,  2, 15, 15,  5,  1,  1,
+								 0,  0,  0,  5,  5,  0,  0,  0,
 								 0,  0,  0,  0,  0,  0,  0,  0,
 								 0,  0,  0,  0,  0,  0,  0,  0,
 								 0,  0,  0,  0,  0,  0,  0,  0,
