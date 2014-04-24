@@ -28,6 +28,9 @@ int KnightAdj[9] = {-20,-16,-12, -8, -4,  0,  4,  8, 12};
 int BishopAdj[9] = {0,0,0,0,0,0,0,0,0};
 int RookAdj[9] =   {15,12, 9, 6, 3, 0,-3,-6,-9};
 
+//adjustments to bishop values depending on number of pawns on same color square as bishop
+int BishopPawnSameColor[9] = {15,12,9,6,3,0,-3,-6,-9};
+
 //King Safety
 int PawnShield1Bonus = 15;
 int PawnShield2Bonus = 7;
@@ -367,6 +370,9 @@ int Engine::LeafEval(int alpha,int beta)
 		//Pawns
 		b = pos.Pieces[i][PIECE_PAWN];
 		int pawncount = popcnt(b);
+		int pawncountcolor[2];
+		pawncountcolor[COLOR_WHITE] = popcnt(b&0x55AA55AA55AA55AA);
+		pawncountcolor[COLOR_BLACK] = popcnt(b&0xAA55AA55AA55AA55);
 		if(!b) //penalty for having no pawns
 		{
 			sideeval[i] -= NoPawnsPenalty;
@@ -491,6 +497,7 @@ int Engine::LeafEval(int alpha,int beta)
 			m |= getBishopA8H1Moves(k,(pos.OccupiedSq45>>getDiag(getturn45(k)))&0xff);
 			m &= m^ColorPieces[i];
 			sideeval[i] += BishopMobility[popcnt(m)];
+			sideeval[i] += BishopPawnSameColor[pawncountcolor[SquareColor[k]]]; //bishop pawn same color adjustment
 			//eval += ColorFactor[i]*popcnt(KingField[getOpponent(i)]&m)*AttackWeights[PIECE_BISHOP];
 			KingAttackUnits[getOpponent(i)] += popcnt(KingField[getOpponent(i)]&m)*AttackWeights[PIECE_BISHOP];
 

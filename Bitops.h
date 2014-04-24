@@ -48,6 +48,8 @@ extern int Piece2Square[2][7];
 extern int Plus8[64];
 extern int Minus8[64];
 
+extern int SquareColor[64];
+
 extern Bitset KnightMoves[64];
 extern Bitset WhitePawnMoves[64];
 extern Bitset BlackPawnMoves[64];
@@ -92,6 +94,11 @@ void printBitsetDiag(Bitset b);
 char Int2Char(int n);
 std::string Long2Str(unsigned long long n);
 std::string Int2Str(int n);
+
+inline int getSquareColor(int n)
+{
+	return SquareColor[n];
+}
 
 inline Bitset getPos2Bit(int n)
 {

@@ -9,7 +9,7 @@ int FutilityMargin[3] = {0,300,600};
 unsigned int HistoryScores[64][64];
 unsigned int ButterflyScores[64][64];
 
-int MAXTIME = 10000;
+int MAXTIME = 1000;
 int MAXDEPTH = 100;
 int CheckupNodeCount = 16384;
 
