@@ -41,7 +41,7 @@ int KingAdjHalfOpenFilePenalty = 18; //penalty for king being adjacent to half o
 int KingAdjOpenFilePenalty = 39; //penalty for king being adjacent to open files
 int KingOnRookFilePenalty = 15; //penalty for king being on an opponent semiopen file with a rook on it
 int KingAdjRookFilePenalty = 8; //penalty for king being adjacent an opponent semiopen file with a rook on it
-int AttackWeights[6] = {2,6,6,6,8,0};
+int AttackWeights[6] = {2,4,4,4,5,0};
 int KingBetweenRooksPenalty = 45;
 //int NoPawnShieldPenalty = 15;
 
