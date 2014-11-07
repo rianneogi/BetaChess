@@ -14,3 +14,7 @@ List of other open source chess engines:
 * http://stockfishchess.org/
 * http://chessprogramming.wikispaces.com/CPW-Engine
 
+Future Improvements:
+* Add a GUI for the engine
+* Add a configuration file
+
