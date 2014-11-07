@@ -15,6 +15,7 @@
 ///BUGS
 
 ///BUILDS
+// Build 36 - 08-11-2014 - Optimized a little bit
 // Build 35 - 08-11-2014 - Fixed 3-fold repetition bug by making evaluation return 0 once 2 similar positions occur(instead of 3)
 // Build 34 - 06-04-2014 - Added bishop pawn same color adjustment
 // Build 33 - 19-01-2014 - Fixed SEE

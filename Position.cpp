@@ -616,6 +616,7 @@ void Position::unmakeMove(Move const& m)
 std::vector<Move> Position::generateMoves()
 {
     std::vector<Move> moves(0);
+	moves.reserve(128);
 
     Bitset ColorPieces[2];
 
@@ -948,6 +949,7 @@ std::vector<Move> Position::generateMoves()
 std::vector<Move> Position::generateCaptures()
 {
     std::vector<Move> moves(0);
+	moves.reserve(128);
 
     Bitset ColorPieces[2];
 

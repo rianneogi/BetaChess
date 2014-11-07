@@ -160,10 +160,6 @@ Move::Move(Bitset n)
 	data = n;
 }
 
-Move::~Move()
-{
-}
-
 Move::Move(Bitset f,Bitset t,Bitset m,Bitset c,Bitset s,Bitset wk,Bitset wq,Bitset bk,Bitset bq,Bitset ep)
 {
     data = f;
@@ -176,12 +172,6 @@ Move::Move(Bitset f,Bitset t,Bitset m,Bitset c,Bitset s,Bitset wk,Bitset wq,Bits
     data |= bk << 26;
     data |= bq << 27;
 	data |= ep << 28;
-}
-
-Move Move::operator=(Move const& m)
-{
-	data = m.data;
-	return *this;
 }
 
 bool Move::operator==(Move const& m) const

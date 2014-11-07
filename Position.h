@@ -29,9 +29,9 @@ public:
     Position();
     Position(Position const& pos,Move const& m);
     ~Position();
-    std::vector<Move> generateMoves();
-	std::vector<Move> generateCaptures();
-	std::vector<Move> generateMoves2();
+    vector<Move> generateMoves();
+	vector<Move> generateCaptures();
+	vector<Move> generateMoves2();
 	bool isLegal(Move const& m);
     void addMove(std::vector<Move>& vec,Move const& m);
     void forceMove(Move const& m);

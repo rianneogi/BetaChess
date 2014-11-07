@@ -392,9 +392,10 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 	{
 		vec = pos.generateMoves();
     }
+	deque<Move> line;
 	for(unsigned int i = 0;i<vec.size();i++) //search
 	{
-		deque<Move> line;
+		line.clear();
 		//m = vec.at(i);
 		m = getHighestScoringMove(vec,i);
 		//Position x = pos; //debug
@@ -507,7 +508,7 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 			alpha = score;
 			alpharaised = true;
 			alphamove = m;
-			lineptr = line;
+			*variation = line;
 		}
 		//else
 		//{
@@ -556,7 +557,7 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 	}
 	if(!(alphamove==CONS_NULLMOVE))
 	{
-		*variation = lineptr;
+		//*variation = lineptr;
 		variation->push_front(alphamove);
 	}
 	Table.Save(pos.TTKey,depth,alpha,bound,alphamove);

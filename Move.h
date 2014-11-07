@@ -12,9 +12,8 @@ class Move
 
     Move();
 	Move(Bitset n);
-    ~Move();
     Move(Bitset f,Bitset t,Bitset m,Bitset c,Bitset s,Bitset wk,Bitset wq,Bitset bk,Bitset bq,Bitset ep);
-	Move operator=(Move const& m);
+	
 	bool operator==(Move const& m) const;
 	bool operator!=(Move const& m) const;
 	bool isEquivalent(Move const& m) const; //checks whether to, from and special are equal
