@@ -41,7 +41,7 @@ int KingAdjHalfOpenFilePenalty = 12; //penalty for king being adjacent to half o
 int KingAdjOpenFilePenalty = 26; //penalty for king being adjacent to open files
 int KingOnRookFilePenalty = 10; //penalty for king being on an opponent semiopen file with a rook on it
 int KingAdjRookFilePenalty = 5; //penalty for king being adjacent an opponent semiopen file with a rook on it
-int AttackWeights[6] = {2,4,4,4,6,0};
+int AttackWeights[6] = {1,3,3,3,4,0};
 int KingBetweenRooksPenalty = 30;
 //int NoPawnShieldPenalty = 15;
 
@@ -201,6 +201,50 @@ int PieceSqValuesEG[7][64] =
 	 -30,  0,  0,  0,  0,  0,  0,-30,
 	 -40,-30,-20,-10,-10,-20,-30,-40}
 };
+
+//int luaGetInteger(lua_State* L,std::string name)
+//{
+//	lua_getglobal(L,name.c_str());
+//	int val = lua_tointeger(L,-1);
+//	lua_pop(L,1);
+//	return val;
+//}
+//
+//int loadFromLua(std::string path)
+//{
+//	lua_State* L = luaL_newstate();
+//	luaL_openlibs(L);
+//	if (luaL_loadfile(L, path.c_str()) || lua_pcall(L, 0, 0, 0)) 
+//	{
+//        std::cout<<"Error: failed to load " << path <<std::endl;
+//		std::cout << lua_tostring(L,-1) << "\n";
+//		return NULL;
+//    }
+//
+//	lua_getglobal(L,"PieceMaterial");
+//	for(int i = 0;i<6;i++)
+//	{
+//		lua_pushinteger(L,i+1);
+//		lua_gettable(L,1);
+//		PieceMaterial[i] = lua_tointeger(L,-1);
+//		MaterialValues[i+1] = PieceMaterial[i];
+//		MaterialValues[i+7] = PieceMaterial[i];
+//		lua_pop(L,1);
+//	}
+//	lua_pop(L,1);
+//
+//	EndgameMaterial = luaGetInteger(L,"EndgameMaterial");
+//	BishopPairBonus = luaGetInteger(L,"BishopPairBonus");
+//	KnightPairBonus = luaGetInteger(L,"KnightPairBonus");
+//	RookPairBonus = luaGetInteger(L,"RookPairBonus");
+//	BishopOutpostBonus = luaGetInteger(L,"BishopOutpostBonus");
+//	KnightOutpostBonus = luaGetInteger(L,"KnightOutpostBonus");
+//	QueenOutEarlyPenalty = luaGetInteger(L,"QueenOutEarlyPenalty");
+//	RookConnectedBonus = luaGetInteger(L,"RookConnectedBonus");
+//	NoPawnsPenalty = luaGetInteger(L,"NoPawnsPenalty");
+//
+//	lua_close(L);
+//}
 
 int Engine::LeafEval(int alpha,int beta)
 {

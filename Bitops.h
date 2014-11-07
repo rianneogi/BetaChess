@@ -2,6 +2,7 @@
 #define BITOPS_H_INCLUDED
 
 #include <iostream>
+#include <conio.h>
 #include <string>
 #include <sstream>
 

@@ -1,6 +1,13 @@
 #ifndef ENGINE_H_INCLUDED
 #define ENGINE_H_INCLUDED
 
+//extern "C"
+//{
+//	#include "lua.h"
+//	#include "lualib.h"
+//	#include "lauxlib.h"
+//}
+
 #include "Position.h"
 #include "TranspositionTable.h"
 #include "Clock.h"
@@ -62,9 +69,11 @@ class Engine
 	int FastEval();
 	int getBoardMaterial();
 	int Trace(int alpha,int beta);
+	//int loadFromLua(std::string path);
 };
 
 void evalinit();
 void searchinit();
 int getNPS(int nodes,int milliseconds);
+//int loadFromLua(std::string path);
 #endif // ENGINE_H_INCLUDED

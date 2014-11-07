@@ -282,7 +282,7 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 		}
 	}*/
 
-	if(pos.underCheck(pos.turn))
+	if(pos.underCheck(pos.turn)) //check extension
 	{
 		depth++;
 	}
@@ -301,9 +301,9 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 		//nodes = 0;
 	}
 
-	if(pos.isRepetition())
+	if(ply!=0 && pos.isRepetition()) //check for repetition
 	{
-		Table.Save(pos.TTKey,depth,0,TT_EXACT,CONS_NULLMOVE);
+		//Table.Save(pos.TTKey,depth,0,TT_EXACT,CONS_NULLMOVE);
 		return 0;
 	}
 
@@ -401,6 +401,11 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 		/*if(ply==0)
 		{
 			cout << "info currmove " << m.toString() << endl;
+		}*/
+		/*if(ply==0)
+		{
+			cout << m.toString() << "\n";
+			_getch();
 		}*/
 		if(!pos.makeMove(m))
 		{
@@ -564,7 +569,7 @@ unsigned long long Engine::getMoveScore(const Move& m)
 	int to = m.getTo();
 	int capturedpiece = m.getCapturedPiece();
 	int special = m.getSpecial();
-	int score = 100000;
+	unsigned long long score = 100000;
 	/*if(ply < PrincipalVariation.size())
 	{
 		if(m==PrincipalVariation.at(ply))
@@ -572,25 +577,27 @@ unsigned long long Engine::getMoveScore(const Move& m)
 			score += 600000;
 		}
 	}*/
-	if(m==Table.getBestMove(pos.TTKey))
+	if(m==Table.getBestMove(pos.TTKey)) //history best move is always first, give it a big advantage of 400000
 	{
 		score += 400000;
 		return score;
 	}
-	if(capturedpiece!=SQUARE_EMPTY)
+	if(capturedpiece!=SQUARE_EMPTY) //a capture
 	{
-		if(StaticExchangeEvaluation(to,from,m.getMovingPiece(),capturedpiece)>=0)
+		int x = StaticExchangeEvaluation(to,from,m.getMovingPiece(),capturedpiece);
+		if(x>=0) //if it is a good capture
 		{
 			score += 300000;
 		}
-		else
+		else //bad capture
 		{
 			score -= 100000;
 		}
 	}
 	else if(special==PIECE_PAWN) //enpassant are also captures
 	{
-		if(StaticExchangeEvaluation(to,from,m.getMovingPiece(),SQUARE_WHITEPAWN)>=0)
+		int x = StaticExchangeEvaluation(to,from,m.getMovingPiece(),SQUARE_WHITEPAWN);
+		if(x>=0)
 		{
 			score += 300000;
 		}
@@ -601,12 +608,12 @@ unsigned long long Engine::getMoveScore(const Move& m)
 	}
 	else
 	{
-		if(((from==KillerMoves[0][ply].getFrom() && to==KillerMoves[0][ply].getTo()) 
+		if(((from==KillerMoves[0][ply].getFrom() && to==KillerMoves[0][ply].getTo())  //if it is a killer move
 			|| (from==KillerMoves[1][ply].getFrom() && to==KillerMoves[1][ply].getTo())))
 		{
 			score += 200000;
 		}
-		score += HistoryScores[from][to];
+		score += HistoryScores[from][to]; //sort the rest by history
 	}
 	return score;
 }

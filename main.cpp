@@ -15,6 +15,8 @@
 ///BUGS
 
 ///BUILDS
+// Build 35 - 08-11-2014 - Fixed 3-fold repetition bug by making evaluation return 0 once 2 similar positions occur(instead of 3)
+// Build 34 - 06-04-2014 - Added bishop pawn same color adjustment
 // Build 33 - 19-01-2014 - Fixed SEE
 // Build 32 - 04-01-2014 - Added epsquare to TTKey
 // Build 31 - 29-12-2013 - Fixed 3-fold repetition check
@@ -100,6 +102,7 @@ using namespace std;
 int main(int argc, char* args[])
 {
 	srand(time(0));
+	//loadFromLua("Personalities\\Wierd.lua");
     datainit();
 	searchinit();
 	evalinit();

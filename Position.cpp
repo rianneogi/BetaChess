@@ -1353,15 +1353,15 @@ bool Position::isRepetition()
 	int rep = 0;
 	int i;
 	int size = hashlist.size();
-	for(int i = 1;i<=size;i++)
+	for(i = 1;i<=size;i++)
 	{
 		Move m = movelist.at(size-i);
-		if(m!=CONS_NULLMOVE && m.getMovingPiece()!=PIECE_PAWN && m.getCapturedPiece()==SQUARE_EMPTY)
+		if(m!=CONS_NULLMOVE && m.getMovingPiece()!=PIECE_PAWN && m.getCapturedPiece()==SQUARE_EMPTY && m.getSpecial()!=PIECE_PAWN)
 		{
 			if(hashlist.at(size-i)==TTKey)
 			{
 				rep++;
-				if(rep>=2)
+				if(rep>=1)
 				{
 					return true;
 				}
