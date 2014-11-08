@@ -10,7 +10,9 @@ int Engine::QuiescenceSearch(int alpha,int beta,Move lastmove)
 	}
 	if(lastmove.getCapturedPiece()!=0)
 	{
-		vector<Move> vec = pos.generateMoves();
+		vector<Move> vec;
+		vec.reserve(128);
+		pos.generateMoves(vec);
 		//movesort(vec,0);
 		int to = lastmove.getTo();
 		//int max = CONS_NEGINF;
@@ -78,7 +80,9 @@ int Engine::QuiescenceSearchStandPat(int alpha,int beta,Move lastmove)
 	}
 	Move m;
 	int score = 0;
-    vector<Move> vec = pos.generateCaptures();
+    vector<Move> vec;
+	vec.reserve(128);
+	pos.generateCaptures(vec);
 	int material = getBoardMaterial();
 	for(int i = 0;i<vec.size();i++)
 	{

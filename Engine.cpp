@@ -36,7 +36,9 @@ Engine::~Engine()
 
 void Engine::makeMove(int i)
 {
-	vector<Move> v = pos.generateMoves();
+	vector<Move> v;
+	v.reserve(128);
+	pos.generateMoves(v);
 	Move m = v.at(i);
 	pos.forceMove(m);
 }

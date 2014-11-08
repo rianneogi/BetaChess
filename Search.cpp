@@ -130,7 +130,9 @@ int Engine::think(int depth,int alpha,int beta,deque<Move>* variation)
 	/*if(depth==0)
 		return LeafEval();*/
 
-	vector<Move> vec = pos.generateMoves();
+	vector<Move> vec;
+	vec.reserve(128);
+	pos.generateMoves(vec);
 	//movesort(vec,depth);
 
 	int score = 0;
@@ -357,7 +359,7 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 	int pieceCount = popcnt(Pieces);
     if(cannull && depth>=3 && pos.underCheck(pos.turn)==false && pieceCount>6) //not endgame
     {
-		int R = depth > 6 ? 4 : 2; //dynamic depth-based reduction
+		int R = depth > 5 ? 3 : 2; //dynamic depth-based reduction
 		m = CONS_NULLMOVE;
 		ply++;
 		pos.forceMove(m);
@@ -384,13 +386,14 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 	Move alphamove = CONS_NULLMOVE;
 	//vec = pos.generateMoves();
 	vector<Move> vec;
+	vec.reserve(128);
 	if(futilityprune)
 	{
-    	vec = pos.generateCaptures(); //search only captures in futility pruning
+    	pos.generateCaptures(vec); //search only captures in futility pruning
 	}
 	else
 	{
-		vec = pos.generateMoves();
+		pos.generateMoves(vec);
     }
 	deque<Move> line;
 	for(unsigned int i = 0;i<vec.size();i++) //search
@@ -520,7 +523,7 @@ int Engine::AlphaBeta(int depth,int alpha,int beta,Move lastmove,deque<Move>* va
 	{
 		if(futilityprune)
 		{
-			vec = pos.generateMoves();
+			pos.generateMoves(vec);
 			int flag = 1;
 			for(int i = 0;i<vec.size();i++)
 			{

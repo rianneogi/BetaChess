@@ -3,6 +3,7 @@
 
 Board::Board(void)
 {
+	moves.reserve(128);
 }
 
 
@@ -34,7 +35,7 @@ void Board::unmakeMove()
 
 void Board::generateMoves()
 {
-	moves = pos.generateMoves();
+	pos.generateMoves(moves);
 }
 
 int Board::getGameStatus()

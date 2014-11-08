@@ -65,7 +65,9 @@ void Interface::UCI()
 				s = getStringToken(str,' ',i);
 				while(s!="")
 				{
-					vector<Move> v = e1.pos.generateMoves();
+					vector<Move> v;
+					v.reserve(128);
+					e1.pos.generateMoves(v);
 					Move m = String2Move(s);
 					for(int j = 0;j<v.size();j++)
 					{
@@ -138,7 +140,9 @@ void Interface::Winboard()
 			Move m = String2Move(s);
 			if(m!=CONS_NULLMOVE)
 			{
-				vector<Move> moves = e1.pos.generateMoves();
+				vector<Move> moves;
+				moves.reserve(128);
+				e1.pos.generateMoves(moves);
 				for(int i = 0;i<moves.size();i++)
 				{
 					if(m==moves.at(i))

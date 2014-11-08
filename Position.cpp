@@ -613,10 +613,10 @@ void Position::unmakeMove(Move const& m)
 	}
 }
 
-std::vector<Move> Position::generateMoves()
+void Position::generateMoves(vector<Move>& moves)
 {
-    std::vector<Move> moves(0);
-	moves.reserve(128);
+    //std::vector<Move> moves(0);
+	//moves.reserve(128);
 
     Bitset ColorPieces[2];
 
@@ -943,13 +943,13 @@ std::vector<Move> Position::generateMoves()
 	}*/
 
 	//sortMoves(moves,turn);
-	return moves;
+	//return moves;
 }
 
-std::vector<Move> Position::generateCaptures()
+void Position::generateCaptures(vector<Move>& moves)
 {
-    std::vector<Move> moves(0);
-	moves.reserve(128);
+    //std::vector<Move> moves(0);
+	//moves.reserve(128);
 
     Bitset ColorPieces[2];
 
@@ -1114,7 +1114,7 @@ std::vector<Move> Position::generateCaptures()
 	}*/
 
 	//sortMoves(moves,turn);
-	return moves;
+	//return moves;
 }
 
 void Position::addMove(std::vector<Move>& vec,Move const& m)
@@ -1281,7 +1281,9 @@ bool Position::underCheck(int turn)
 
 Move Position::makeCapture(int piece, int n)
 {
-	std::vector<Move> vec = generateCaptures();
+	std::vector<Move> vec;
+	vec.reserve(128);
+	generateCaptures(vec);
 	for(int i = 0;i<vec.size();i++)
 	{
 	    Move m = vec.at(i);
@@ -1332,7 +1334,10 @@ int Position::getGameStatus()
 	{
 		return STATUS_3FOLDREP;
 	}
-	if(generateMoves().size()==0)
+	vector<Move> vec;
+	vec.reserve(128);
+	generateMoves(vec);
+	if(vec.size()==0)
 	{
 		if(underCheck(turn) && turn==COLOR_WHITE)
 		{
